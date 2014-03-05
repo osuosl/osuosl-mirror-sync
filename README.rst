@@ -11,8 +11,8 @@ Building the docs
 2. source venv/bin/activate
 3. pip install -r requirements.txt
 4. cd docs
-4. make html
-5. firefox build/html/index.html
+5. make html
+6. firefox build/html/index.html
 
 .. note:: To later disable the virtualenv, run 'deactivate' or close
           your shell.
