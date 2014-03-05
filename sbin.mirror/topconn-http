@@ -1,0 +1,6 @@
+#!/bin/bash
+
+IP=`ifconfig | grep -A 1 eth0 | grep inet | sed -e 's/.*inet addr://' | sed -e 's/ *Bcast.*//'`
+
+netstat -tn | grep tcp | grep "$IP:80" | awk '{print $5}' | sed -e 's/:.*//' \
+	| sort | uniq -c | sort -n | tail -n 25

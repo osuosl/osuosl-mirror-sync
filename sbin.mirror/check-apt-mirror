@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [ "$1" == "" ]; then
+	echo "Usage $0 /path/to/mirror"
+	exit
+fi
+
+FILE1=`tempfile` 
+
+cd $1 && \
+check-apt-mirror-catlist | check-apt-mirror-md5 > $FILE1 && \
+sort -u $FILE1 | check-apt-mirror-verify
+rm $FILE1
+

@@ -1,0 +1,101 @@
+#!/bin/bash
+# Copyright 2001-2005 Ned Ludd (Solar Productions)
+# Distributed under the terms of the GNU General Public License v2
+# $Header: $
+
+# Ned Ludd <solar@linbsd.net>, <solar@gentoo.org>
+
+chrootdir=$1
+CP="cp"
+
+usage() {
+	local eol=""
+	echo "Usage: $0 <target-root> file file..."
+	[ "$1" != "" ] && echo $@
+	exit 1
+}
+
+pexit() {
+	[ "$1" != "" ] && echo err: $@ > /dev/stderr
+	exit 1
+}
+
+[ -z "${chrootdir}" ] && usage 
+
+[ -e "${chrootdir}" -a ! -d "${chrootdir}" ] && usage err ${chrootdir} must be dir
+
+[ -e /usr/lib/portage/bin/prepstrip ] && export STRIP=/usr/lib/portage/bin/prepstrip || export STRIP=strip
+
+umask 022
+
+mkdir -p ${chrootdir}
+
+[ -w "${chrootdir}" ] || pexit You dont have writable permissions to ${chrootdir}
+cd ${chrootdir} || pexit cant cd to ${chrootdir}
+
+# I'm taking some stuff out because it's not needed for a little rssh chroot --Mike
+#mkdir -p etc dev proc tmp lib usr root home usr/bin usr/sbin usr/lib bin sbin var var/log var/run > /dev/null
+#[ -r "/etc/localtime" ] && ${CP} /etc/localtime etc/
+#
+#cd dev || pexit cant cd to dev
+#
+#[ ! -e tty ] && (mknod -m 666 tty c 5 0 2> /dev/null || echo cant mknod for tty)
+#[ ! -e null ] &&  (mknod -m 666 null c 1 3 2> /dev/null || echo cant mknod for null)
+#[ ! -e zero ] && (mknod -m 666 zero c 1 5 2> /dev/null || echo cant mknod for zero)
+#[ ! -e urandom ] && (mknod -m 644 urandom c 1 9 2> /dev/null || echo cant mknod for urandom)
+#
+#chown root.tty tty 2> /dev/null
+#chown root.sys null zero 2> /dev/null
+#
+#if [ -e /proc/self/fd ] ; then    
+#	ln -fs /proc/self/fd fd 2> /dev/null
+#	ln -fs fd/0 stdin
+#	ln -fs fd/1 stdout
+#	ln -fs fd/2 stderr
+#fi
+#cd ..
+
+# If were using a dynamically linked executable then we must figure out
+# what libraries will be needed in our chrooted environment
+
+cd ..
+shift
+
+for bin in $@ ; do
+	[ -n "${bin}" -a  ! -f "${bin}" ] && usage err ${bin} does not exist
+
+	[ -z "${bin}" -o -z "${chrootdir}" -o ! -f "${bin}" ] &&
+		pexit "You have to enter both a directory name and a path to the binary you wish to use"
+
+	libdir=$(echo /lib /usr/lib; grep ^/ /etc/ld.so.conf)
+
+	ldd "${bin}" | awk -F" " '{print $1}'| while read lib; do	
+		if [ $(echo "${lib}"|cut -c1) != "/" ]; then
+			# Looking for library in libdirs
+			lib=$(find ${libdir} \( -type f -o -type l \) -name "${lib}" 2> /dev/null | head -n 1)
+		fi
+		if [ -n "${lib}" ] ; then
+			subdir=$(dirname "${lib}");
+			# if file exists we skip coping it over for now.
+			# we could add the option to overwrite if needed.
+			if [ ! -f ${chrootdir}${lib} ] ; then	   
+				echo "Copying ${lib} -> ${chrootdir}${lib} for $bin"
+				mkdir -p "${chrootdir}${subdir}"
+
+				# later on lets grab the user from
+				# etc/{passwd,shadow} and put them into
+				# the files they need to go.
+				[ ! -G ${lib} ] && echo FILE exists and is not owned by the effective group ID: ${lib}
+				${CP} -p "${lib}" "${chrootdir}${lib}" 
+				#${STRIP} "${chrootdir}${lib}"
+        		fi
+		fi
+	done
+	if [ ! -x ${chrootdir}/${bin} ] ; then
+		mkdir -p $(dirname ${chrootdir}/${bin})
+		[ ! -G ${bin} ] && echo FILE exists and is not owned by the effective group ID: ${bin}
+		${CP} -p ${bin} ${chrootdir}/${bin}
+	fi
+done
+
+echo "Done..."

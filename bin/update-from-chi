@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Pull stuff from rsync.example.org 
+
+site=$1
+
+if [ "$site" == "" ]; then
+	echo "Usage: update-from-rsync <sitename>"
+	exit 1
+fi
+
+/usr/bin/rsync -aHvx --delete --delete-after --stats --progress --port 9000 ftp-chi::all/$site/ /data/ftp/.1/$site/
+

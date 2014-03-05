@@ -1,0 +1,12 @@
+#!/bin/bash
+
+source /data/mirror/etc/trigger.conf
+
+for trigger in `find $DIR -name trigger`
+do
+	rm -f $trigger
+done
+for server in $SRV
+do
+	rm -f $DIR/.$server/*
+done

@@ -1,0 +1,26 @@
+#!/sbin/runscript
+# Copyright 1999-2007 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Header: $
+
+depend() {
+	need net
+	use apache
+}
+
+start() {
+	ebegin "Starting hitstats.py"
+	start-stop-daemon --start --oknodo --quiet \
+		--exec /usr/local/sbin/hitstats.py \
+		--pidfile /var/run/hitstats.pid \
+		--background --make-pid -- \
+		--port 8000 --log /var/log/hitstats.log
+	eend $?
+}
+
+stop() {
+	ebegin "Stopping hitstats.py"
+	start-stop-daemon --stop --quiet --oknodo \
+		--pidfile /var/run/hitstats.pid
+	eend $?
+}

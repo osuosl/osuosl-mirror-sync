@@ -1,0 +1,5 @@
+# Half assed logrotate (current process will keep logging to the moved log :-( but oh well)
+0  0 * * * root /usr/local/sbin/logs-rotate-vsftpd
+
+# Compress old ftp logs
+15 0 * * * root /usr/local/sbin/compress-vsftpd

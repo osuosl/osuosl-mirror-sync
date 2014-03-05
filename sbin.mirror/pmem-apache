@@ -1,0 +1,10 @@
+#!/bin/bash
+
+USE=0 
+
+for i in `ps aux|grep ^apache|grep /usr/sbin/apache2|tr -s " "|cut -d " " -f 4` 
+do 
+USE=`echo $USE + $i|bc` 
+done 
+
+echo $USE

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+ps ax | grep "rsync --daemon" | awk '{print $1}' | xargs | perl -p -e 's/ +/,/g' | xargs lsof -p | awk '{print $9" "$2}' | grep '^/data/ftp/\.[12]/' | sed -e 's/\/data\/ftp\/\.[12]\///g' | sed -e 's/\/[^ ]*//g' | sort | uniq -f 1 | awk '{print $1}' | uniq -c | sort -n
+

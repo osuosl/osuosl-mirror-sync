@@ -1,0 +1,129 @@
+
+
+body {
+	background-color: #FFF;
+	margin: 0 auto 0 auto;			
+	width: 47em;
+}
+
+hr {
+	width: 100%;
+}
+
+.main {
+	margin: 65px 0px;
+	vertical-align: center;
+	padding: 10px;
+	width: 97%;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+.topbar {
+	margin: 25px 75px;
+	width: 100%;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	margin: 0 auto 0 auto;			
+}
+.strip {
+  	background: #C50;
+	height: 10px;
+}
+.title .osu {
+	font: bold italic 18px verdana, arial, sans-serif;
+	position: absolute;
+	top: 35px;
+	left: 50px;
+	z-index: 1;
+	color: #CCC;
+}
+
+.title .osl {
+	font: bold italic 40px verdana, arial, sans-serif;
+	position: absolute;
+	top: 43px;
+	left: 100px;
+	z-index: 3;
+	color: #999;
+}
+.title .mirrors {
+	font: bold italic 24px verdana, arial, sans-serif;
+	position: absolute;
+	top: 70px;
+	left: 350px;
+	z-index: 2;
+	color: #CCC;
+}
+
+
+.title a {
+	color: #000;
+}
+.title a:hover {
+	text-decoration: none;
+}
+
+a { text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+ul#tabnav {
+	font: bold 11px verdana, arial, sans-serif;
+	border-top: 1px solid #000;
+	list-style-type: none;
+	padding-bottom: 24px;
+	margin: 0px;
+}
+
+ul#tabnav li {
+	height: 22px;
+	float: left;
+	background-color: #eee;
+	border: 1px solid #000;
+	margin: -1px 4px 0 4px;
+}
+
+body#others li.others, body#apache li.apache, body#centos li.centos, body#debian li.debian, body#gentoo li.gentoo, body#opensuse li.opensuse, body#fedora li.fedora, body#slackware li.slackware, body#ubuntu li.ubuntu {
+	border-top: 1px solid #C50;
+	background-color: #C50;
+}
+body#others li.others a, body#apache li.apache a, body#centos li.centos a, body#debian li.debian a, body#gentoo li.gentoo a, body#opensuse li.opensuse a, body#fedora li.fedora a, body#slackware li.slackware a, body#ubuntu li.ubuntu a {
+	color: #000;
+}
+
+#tabnav a {
+	float: left;
+	display: block;
+	color: #666;
+	text-decoration: none;
+	padding: 4px;
+}
+
+#tabnav a:hover {
+	border-top: 1px solid #C50;
+	margin: -1px 0px 0 0px;
+	background: #C50;
+	color: #000;
+}
+
+.bwbar {
+	display: block;
+}
+
+.info {
+	font: italic 10px verdana, arial, sans-serif;
+	display: inline;
+}
+
+#rackathon_corner_ad {
+	position: absolute;
+	left: 0;
+	top: 0;
+	display: block;
+	height: 125px;
+	width: 125px;
+	background: url(left_corner_ad.gif) no-repeat;
+	text-indent: -999em;
+	text-decoration: none;
+} 

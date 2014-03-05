@@ -1,0 +1,4 @@
+IndexOptions +SuppressHTMLPreamble 
+Options -Indexes
+HeaderName /header-inc/others-HEADER.html
+ReadMeName /header-inc/README.html

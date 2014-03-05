@@ -1,0 +1,21 @@
+#!/usr/bin/perl -w
+
+use strict;
+
+my ($file, $md5);
+while (<>) {
+	if (/^Filename: (\S+)$/) {
+		$file = $1;
+	}
+	if (/^MD5sum: (\S+)$/) {
+		$md5 = $1;
+		if (defined $file and defined $md5) {
+			print "$md5  ./$file\n";
+		}
+		else {
+			die "Something was undefined...\n";
+		}
+		undef $file;
+		undef $md5;
+	}
+}

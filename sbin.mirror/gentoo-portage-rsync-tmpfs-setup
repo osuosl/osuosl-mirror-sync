@@ -1,0 +1,42 @@
+#!/bin/bash
+# Author: Lance Albertson <ramereth>
+# Modified: Stuart McKim <mckim> for integration with standard mirror setup
+# Sets up the following for an rsync.g.o server
+# 1. Creates loopback file in tmpfs
+# 2. Mkfs the loopback file to reiserfs
+# 3. Mount loopback file
+# 4. Copy tree over to loopback file
+# 5. start xinetd
+
+source /data/mirror/etc/gentoo-portage.conf
+
+# Set up loopback device
+dd if=/dev/zero of=${LOOPFILE} bs=1M count=${MEGABYTES} &> /dev/null
+losetup ${LOOPDEV} ${LOOPFILE}
+${MKFS} ${LOOPDEV} &> /dev/null
+
+# This file needs to exist before the rsync from disk will commence.
+# Normally it is created by the run-update script, but that has yet
+# to run at boot time.
+touch $READY_FLAG_DIR/$HOSTNAME
+
+# This file should not exist when this script is run. If it does, it is
+# probably due to a reboot while scripts were running.
+if [ -f $LOCK_FLAG_DIR/lock-tmpfs ] ; then
+    rm $LOCK_FLAG_DIR/lock-tmpfs
+fi
+
+# Mount and copy tree over to loopback
+install -d $MOUNTPNT -g wheel -o root -m 0750
+mount -t ${FSTYPE} ${LOOPDEV} ${MOUNTPNT} -o ${MOUNTOPTS}
+# Do not continue if the rsync from disk failed to avoid
+# having an empty or partial tree in tmpfs
+if ! /usr/local/sbin/gentoo-portage-rsync-tmpfs; then
+    echo "/usr/local/sbin/gentoo-portage-rsync-tmpfs returned with a non-zero value." | /bin/mailx -s "$HOSTNAME: xinetd not started - gentoo-portage sync failure" mirrors@example.org
+    exit 3
+fi
+
+# start xinetd after stuff is copied over
+/etc/init.d/xinetd start &> /dev/null
+# safety check for cfengine to look for
+touch $MOUNTPNT/.tree.copied

@@ -1,0 +1,13 @@
+# Some variables to controll updates:
+
+
+SCRIPT_PATH=/data/mirror/
+SCRIPT_BIN=$SCRIPT_PATH/bin
+SCRIPT_ETC=$SCRIPT_PATH/etc
+SCRIPT_LOCK=$SCRIPT_PATH/lock
+
+# update script set to use (master|osl)
+#UPDATE_FROM=master
+UPDATE_FROM=osl
+
+SET_TRIGGER=false

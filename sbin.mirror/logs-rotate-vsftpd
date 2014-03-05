@@ -1,0 +1,6 @@
+#!/bin/bash
+
+if [ -e /var/log/vsftpd/xferlog.log ] ; then
+    /bin/mv /var/log/vsftpd/xferlog.log /var/log/vsftpd/xferlog/`/bin/date -d yesterday +%Y%m%d`.log
+    chmod 644 /var/log/vsftpd/xferlog/*.log*
+fi

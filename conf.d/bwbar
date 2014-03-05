@@ -1,0 +1,8 @@
+# bwbar config
+
+INTERFACES=eth0
+
+range_eth0=1000
+interval_eth0=60
+txt_eth0=/var/www/header-inc/ubar.txt
+png_eth0=/var/www/header-inc/ubar.png

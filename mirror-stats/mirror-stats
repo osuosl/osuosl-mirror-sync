@@ -1,0 +1,12 @@
+#!/bin/bash
+
+for i in {15..0}; do
+    for d in /var/log/HOSTS/{ftp-osl.example.org,ftp-chi,ftp-chi.example.org,ftp-nyc.example.org}; do
+        LOG=$d/`date -d "$i days ago" "+%Y%m%d"`.mirrorlog
+        if [ -e $LOG ]; then
+            cat $LOG
+        elif [ -e $LOG.gz ]; then
+            zcat $LOG
+        fi
+    done
+done | /usr/local/sbin/mirror-stats-process

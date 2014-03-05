@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Exit on error
+set -e
+
+# Sync EPEL first
+rsync -avrHS --password-file=/data/mirror/etc/fedora.passwd --numeric-ids \
+    --delay-updates --delete --delete-after \
+    user@mirrors.example.org::fedora-epel /data/ftp/.1/fedora-epel/
+
+# Set trigger so slaves will sync epel as this is weird
+/data/mirror/bin/trigger-set fedora-epel
+
+# Sync main Fedora repo
+/usr/bin/rsync -avrHS --exclude-from=/data/mirror/etc/fedora.exclude \
+    --delete-excluded --password-file=/data/mirror/etc/fedora.passwd
+    --numeric-ids --delay-updates --delete --delete-after \
+    user@mirrors.example.org::fedora-enchilada /data/ftp/.1/fedora/
+
+# Send report of mirrored content to fedora (required to be a fedora mirror)
+/data/mirror/bin/fedora-report_mirror -c /data/mirror/etc/fedora-report_mirror.conf
+

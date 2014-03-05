@@ -1,0 +1,23 @@
+#!/bin/bash
+
+source /data/mirror/etc/trigger.conf
+
+tree=$1
+
+if [ "$tree" == "" ]; then
+	echo "Usage: trigger-set <treename>"
+	exit 1
+fi
+
+if [ ! -d $FTP/.1/$tree ] && [ ! -d $FTP/.2/$tree ]; then
+	echo "Error: $tree does not exist in $FTP/.1 or $FTP/.2"
+	exit 1
+fi
+
+if [ ! -d $DIR/$tree ]; then
+	mkdir $DIR/$tree
+fi
+
+logger -t mirror "trigger set $tree"
+umask 002
+touch $DIR/$tree/trigger

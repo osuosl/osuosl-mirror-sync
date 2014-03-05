@@ -1,0 +1,18 @@
+# OSL internal rsync service
+
+service rsync-osl
+{
+	socket_type     = stream
+	type		= UNLISTED
+	wait            = no
+	user            = root
+	server          = /usr/bin/timeout
+	server_args     = 1d /usr/bin/rsync --daemon --port=9000 --config=/etc/rsyncd-osl.conf
+	log_on_success  = PID HOST DURATION
+	log_on_failure  = HOST ATTEMPT
+	port            = 9000
+	only_from       = 127.0.0.1 127.0.0.2 127.0.0.3
+	nice            = 5
+	flags           = IPv4
+	disable         = no
+}

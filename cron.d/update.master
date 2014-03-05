@@ -1,0 +1,21 @@
+#####################################################
+# Master mirror crontab
+#
+
+MAILTO=mirrors@example.org
+
+######
+# Scan for new triggers
+* * * * * root /data/mirror/bin/trigger-scan
+
+######
+# foo-project
+0 5 * * * root /data/mirror/bin/run-update foo-project --email
+
+######
+# update-debian
+# THIS IS SYNCED WITH FTPSYNC PUSH TRIGGERS
+# PUSH ONLY -- temporary cronjob because debian won't talk to me '
+#15 2,6,10,14,18,22 * * * debian /home/debian/ftpsync
+
+# vim: ft=crontab

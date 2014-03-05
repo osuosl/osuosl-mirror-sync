@@ -1,0 +1,11 @@
+#!/bin/bash
+
+USE=0 
+
+for i in `ps aux | grep ^nobody | grep /usr/sbin/vsftpd \
+	| tr -s " "| cut -d " " -f 6` 
+do 
+USE=`expr $USE + $i` 
+done 
+
+echo $USE

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+/data/mirror/bin/ftpsync-wrapper debian

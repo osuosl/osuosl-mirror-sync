@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Pull stuff from rsync.example.org 
+
+site=$1
+
+if [ "$site" == "" ]; then
+	echo "Usage: update-from-rsync <sitename>"
+	exit 1
+fi
+
+if rsync --port 9000 ftp-osl::all1 | awk '{print $5}' | grep "^${site}$" > /dev/null; then
+	echo "Tree is in 1"
+	num=1
+elif rsync --port 9000 ftp-osl::all2 | awk '{print $5}' | grep "^${site}$" > /dev/null; then
+	echo "Tree is in 2."
+	num=2
+else
+    echo "Failed to find project on master: $site"
+    exit 1
+fi
+
+/usr/bin/rsync -aHvx --delete --delete-after --timeout=1800 --exclude .~tmp~/ --port 9000 ftp-osl.example.org::all$num/$site/ /data/ftp/.$num/$site/

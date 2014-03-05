@@ -1,0 +1,11 @@
+# /etc/conf.d/local.start
+
+# This is a good place to load any misc programs
+# on startup (use &>/dev/null to hide output)
+
+# Clean out old mirror lock files: 
+find /data/mirror/lock/ -name lock -type f -print0 | xargs -0 -r rm -f
+
+# At this time we do not provide the gentoo-portage rsync,
+# but we may in the future.
+#/usr/local/sbin/gentoo-portage-rsync-tmpfs-setup &

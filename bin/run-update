@@ -1,0 +1,81 @@
+#!/bin/bash
+
+source /data/mirror/etc/run-update.conf
+
+SITE=$1
+EMAIL=$2
+
+if [ "$EMAIL" == "--email" ]; then
+	TEMPFILE=`mktemp`
+	REDIRECT=$TEMPFILE
+else
+	REDIRECT="/dev/stdout"
+fi
+
+if [ "$1" == "" ]; then
+	echo "Usage: $0 sitename [--email]"
+	echo "If sitename == all, run all update scripts"
+	echo "If --email is added, an email will go to mirrors@example.org if rsync didn't run"
+	exit 1
+fi
+
+FAILED="false"
+
+mkdir -p $SCRIPT_LOCK/$SITE
+if [ ! -d $SCRIPT_LOCK/$SITE ] || [ ! -w $SCRIPT_LOCK/$SITE ]; then
+	echo "The locking directory '$SCRIPT_LOCK/$SITE' does not exist or is not writable"
+	exit 1
+fi
+
+if [ "$UPDATE_FROM" == "osl" ] || [ "$UPDATE_FROM" == "chi" ] || [ "$UPDATE_FROM" == "atl" ]; then
+	if lockfile -r 0 $SCRIPT_LOCK/$SITE/lock; then
+		echo "Running $SCRIPT_BIN/update-from-rsync $SITE"
+		logger -t mirror "sync start $SITE (from: '$UPDATE_FROM' cmd: '$SCRIPT_BIN/update-from-rsync $SITE')"
+		if $SCRIPT_BIN/update-from-osl $SITE; then
+			logger -t mirror "sync ok $SITE"
+            # Debian wants timestamps put on for our slave mirrors too, not just the master
+            if [ "$SITE" == "debian" ]; then
+                HOSTNAME=`hostname -f`
+                date -u > "/data/ftp/pub/ftp.debian.org/debian/project/trace/$HOSTNAME"
+                chmod 644 "/data/ftp/pub/ftp.debian.org/debian/project/trace/$HOSTNAME"
+            fi
+		else
+			logger -t mirror "sync fail $SITE"
+			FAILED="true"
+		fi
+		rm -f $SCRIPT_LOCK/$SITE/lock
+	else
+		logger -t mirror "sync locked $SITE (lockfile: $SCRIPT_LOCK/$SITE/lock)"
+	fi
+	SET_TRIGGER="false" #No trigger system on slave boxes
+else
+	if lockfile -r 0 $SCRIPT_LOCK/$SITE/lock; then
+		echo "Running $SCRIPT_BIN/update-$UPDATE_FROM/$SITE"
+		logger -t mirror "sync start $SITE (from: '$UPDATE_FROM' cmd: '$SCRIPT_BIN/update-$UPDATE_FROM/$SITE')"
+		if $SCRIPT_BIN/update-$UPDATE_FROM/$SITE; then
+			logger -t mirror "sync ok $SITE"
+		else
+			logger -t mirror "sync fail $SITE"
+			FAILED="true"
+		fi
+		rm -f $SCRIPT_LOCK/$SITE/lock
+	else
+		logger -t mirror "sync locked $SITE (lockfile: $SCRIPT_LOCK/$SITE/lock)"
+		SET_TRIGGER="false"
+	fi
+fi > $REDIRECT 2>&1
+
+if [ "$SET_TRIGGER" == "true" ]; then
+	echo "Setting trigger for $SITE"
+	logger -t mirror "sync trigger $SITE"
+	$SCRIPT_BIN/trigger-set $SITE
+fi >> $REDIRECT 2>&1
+
+if [ "$TEMPFILE" != "" ]; then
+	if [ "$FAILED" == "false" ]; then
+		rm $TEMPFILE
+	else
+		cat $TEMPFILE | /bin/mailx -s "$HOSTNAME: sync fail $SITE" mirrors@example.org
+		rm $TEMPFILE
+	fi
+fi

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+source /data/mirror/etc/trigger.conf
+
+umask 002
+for trigger in `find $DIR -name trigger`
+do
+	tree=`basename \`dirname $trigger\``
+	for server in $SRV
+	do
+		touch $DIR/.$server/$tree
+	done
+	rm -f $trigger
+done

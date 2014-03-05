@@ -1,0 +1,14 @@
+#!/bin/bash
+
+source /data/mirror/etc/gentoo-portage.conf
+
+/etc/init.d/xinetd stop
+umount ${MOUNTPNT} 
+losetup -d ${LOOPDEV}
+
+# This lock file should be removed if it exists. It probably indicates that
+# scripts were running. If the lock file is left in place, xinetd might not
+# get restarted.
+if [ -f $LOCK_FLAG_DIR/lock-tmpfs ] ; then
+    rm $LOCK_FLAG_DIR/lock-tmpfs
+fi

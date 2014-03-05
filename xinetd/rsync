@@ -1,0 +1,19 @@
+# OSL Rsync service
+
+service rsync
+{
+	socket_type     = stream
+	wait            = no
+	user            = root
+	server          = /usr/bin/timeout
+	server_args     = 1d /usr/bin/rsync --daemon
+	log_on_success  = PID HOST DURATION
+	log_on_failure  = HOST ATTEMPT
+	port            = rsync
+	only_from       = 0.0.0.0/0
+	nice            = 5
+	instances       = 60
+	per_source      = 4
+	flags           = IPv4
+	disable         = no
+}

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+for dir in /data/ftp/{.1,.2}/*; do
+	if [ -d $dir ] && [ ! -L $dir ] && [ `basename $dir` != "lost+found" ]
+	then
+		size=`du -sm $dir | cut -f1`
+		tree=`basename $dir`
+		logger -t mirror "check size $tree $size"
+	fi
+done

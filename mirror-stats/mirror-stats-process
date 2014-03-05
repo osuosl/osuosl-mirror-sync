@@ -1,0 +1,176 @@
+#!/usr/bin/perl -w
+
+use strict;
+
+my $SHOST   = "ftp-osl.example.org"; # host to get the tree sizes from
+my $TZ      = "UTC";    # syslog does not include timezone
+my $OLD     = "2 days ago"; # when to tag something as stale
+my $HTML    = "/data/mirror/www/index.html";
+my $RSS     = "/data/mirror/www/mirror.xml";
+my $HTMLURL = "http://log.example.org/";
+
+open(HTML,'>',$HTML) or die "Failed to open $HTML for writing\n";
+open(RSS,'>',$RSS) or die "Failed to open $RSS for writing\n";
+
+my %bytree;
+while (<>) {
+    my $l = $_;
+    s/^(\w{3} {1,2}\d{1,2} \d{2}:\d{2}:\d{2})\s+//
+        or print STDERR "malformed date at line: $l\n" and next;
+    my $date = $1;
+
+    s/^(\S+)\s+//
+        or print STDERR "malformed host at line: $l :: $_\n" and next;
+    my $host = $1;
+
+    s/^mirror:\s+//
+        or print STDERR "not a mirror record at line: $l\n" and next;
+
+    s/^(\S+)\s+(\S+)\s+(\S+)\s*//
+        or print STDERR "malformed log entry at line $l\n" and next;
+
+    my $type = $1;
+    my $event = $2;
+    my $tree = $3;
+    my $extra = $_;
+    chomp $extra;
+
+    $bytree{$tree}{$host}{$type}{$event}{'date'} = $date;
+    $bytree{$tree}{$host}{$type}{$event}{'extra'} = $extra;
+}
+
+print HTML "<html>
+<head>
+<title>Mirror Stats</title>
+<style type=\"text/css\"><!--
+table { border-collapse: collapse; }
+.tree { border-top: 1px solid gray; }
+.size { border-top: 1px solid gray; font-style: italic; padding-left: 2em; }
+.extra { border-top: 1px solid gray; }
+.host { padding-left: 3em; }
+.success { color: green; padding-left: 3em; }
+.unknown { color: gray; padding-left: 3em; }
+.failed { color: red; padding-left: 3em; }
+.locked { color: orange; padding-left: 3em; }
+.running { display: padding-left: 3em; }
+.stale { font-style: italic; font-weight: bold; }
+.date { border-top: 1px solid gray; font-style: italic; padding-left: 2em; }
+--></style>
+</head>
+<body>
+<h2>Mirror Stats</h2>
+<table>
+";
+
+print RSS "<?xml version=\"1.0\"?>
+<rss version=\"2.0\">
+<channel>
+    <title>Mirror Stats</title>
+    <link>$HTMLURL</link>
+";
+
+foreach my $tree (sort(keys %bytree)) {
+    print HTML "<tr><td class=\"tree\">\n";
+    print HTML "$tree\n";
+    print HTML "</td><td class=\"size\">\n";
+    my $mb = $bytree{$tree}{$SHOST}{'check'}{'size'}{'extra'};
+    if (defined $mb) {
+        my $gb = $mb / 1024;
+        printf(HTML " %.2f GB, %d MB\n", $gb, $mb);
+    }
+    print HTML "</td><td class=\"extra\">\n";
+    print HTML "</td></tr>\n";
+
+    foreach my $host (sort(keys %{$bytree{$tree}})) {
+        print HTML "<tr><td class=\"host\">\n";
+        print HTML " $host\n";
+        print HTML "</td>\n";
+        my $start = $bytree{$tree}{$host}{'sync'}{'start'}{'date'};
+        my $success = $bytree{$tree}{$host}{'sync'}{'ok'}{'date'};
+        my $fail = $bytree{$tree}{$host}{'sync'}{'fail'}{'date'};
+        my $lock = $bytree{$tree}{$host}{'sync'}{'locked'}{'date'};
+
+        # Numaric epoch based times
+        my $start_e = (defined $start)?
+            `date -d "$start $TZ" "+\%s"` : 0;
+        chomp $start_e if (defined $start_e);
+        my $success_e = (defined $success)?
+            `date -d "$success $TZ" "+\%s"` : 0;
+        chomp $success_e if (defined $success_e);
+        my $fail_e = (defined $fail)?
+            `date -d "$fail $TZ" "+\%s"` : 0;
+        chomp $fail_e if (defined $fail_e);
+        my $lock_e = (defined $lock)?
+            `date -d "$lock $TZ" "+\%s"` : 0;
+        chomp $lock_e if (defined $lock_e);
+
+        my $failed = 0;
+        my $locked = 0;
+        my $finish_e;
+        if ($lock_e and $lock_e > $fail_e and $lock_e > $success_e) {
+            $locked = 1;
+        }
+        if ($fail_e and $fail_e > $success_e) {
+            $failed = 1;
+            $finish_e = $fail_e;
+        }
+        else {
+            $finish_e = $success_e;
+        }
+
+        my $running = ($start_e and $start_e > $finish_e)? 1 : 0;
+
+        my $old = `date -d "$OLD $TZ" "+\%s"`;
+        chomp $old;
+        my $stale = ($old > $finish_e and not $locked)? 1 : 0;
+
+        if ($locked) {
+            print HTML "<td class=\"locked\">\n";
+            print HTML "<div class=\"stale\">\n" if ($stale);
+            print HTML "  Last run LOCKED at $lock $TZ\n";
+            print HTML "</div>\n" if ($stale);
+            print HTML "</td>\n";
+            print RSS "<item><title>$tree $host locked $lock $TZ</title></item>\n";
+        }
+        elsif ($failed) {
+            print HTML "<td class=\"failed\">\n";
+            print HTML "<div class=\"stale\">\n" if ($stale);
+            print HTML "  Last run FAILED at $fail $TZ\n";
+            print HTML "</div>\n" if ($stale);
+            print HTML "</td>\n";
+            print RSS "<item><title>$tree $host failed $fail $TZ</title></item>\n";
+        }
+        elsif ($success_e) {
+            print HTML "<td class=\"success\">\n";
+            print HTML "<div class=\"stale\">\n" if ($stale);
+            print HTML "  Last run OK at $success $TZ\n";
+            print HTML "</div>\n" if ($stale);
+            print HTML "</td>\n";
+        }
+        else {
+            print HTML "<td class=\"unknown\">\n";
+            print HTML "  Last run UNKNOWN\n";
+            print HTML "</td>\n";
+            #print RSS "<item><title>$tree/$host: unknown</title></item>\n";
+        }
+        if ($running) {
+            print HTML "<td class=\"running\">\n";
+            print HTML "  Running, started at $start $TZ\n";
+            print HTML "</td>\n";
+            print RSS "<item><title>$tree $host running $start $TZ</title></item>\n";
+        }
+        print HTML "</tr>\n";
+    }
+}
+
+print HTML "<tr><td class=\"extra\">
+</td><td class=\"extra\"></td>
+<td class=\"date\">
+Generated ".`date -u`."
+</td></tr>
+</table></body></html>\n";
+
+print RSS "</channel></rss>\n";
+
+close(HTML);
+close(RSS);

@@ -1,0 +1,3 @@
+# Copy the vectorcontrib authorized_keys file every min 
+# (work around for ssh permission checking)
+* * * * * root cp /home/vectorlinux/.ssh/authorized_keys2-contrib /home/vectorcontrib/.ssh/authorized_keys2

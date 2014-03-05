@@ -1,0 +1,56 @@
+#!/bin/bash
+# This script handles the rsyncing of the gentoo-portage tree from disk
+# into the tmpfs mount.
+
+EMAIL=$1
+
+source /data/mirror/etc/gentoo-portage.conf
+
+# If another instance of this script is running, we shouldn't start another instance
+if [ -f $LOCK_FLAG_DIR/lock-tmpfs ]; then
+    exit 3
+fi
+
+# Set a lockfile to keep from running multiple instances of this script
+touch $LOCK_FLAG_DIR/lock-tmpfs
+
+if [ "$EMAIL" == "--email" ]; then
+    TEMPFILE=`mktemp`
+    REDIRECT=$TEMPFILE
+else
+    REDIRECT="/dev/stdout"
+fi
+
+# Test if we have finished pulling from upstream or ftp-osl
+while [ -f $LOCK_FLAG_DIR/lock ]; do
+    sleep 30
+done
+while [ ! -f $READY_FLAG_DIR/$HOSTNAME ]; do
+    sleep 30
+done
+
+# Now that the rsync to disk has finished, can begin rsync to tmpfs
+if ${RSYNC} ${OPTS} ${RAMFS_SRC} ${RAMFS_DST}; then
+    FAILED='false'
+else
+    FAILED='true'
+fi > $REDIRECT 2>&1
+
+# Remove ready flag
+if rm $READY_FLAG_DIR/$HOSTNAME; then
+    FAILED='false'
+else
+    FAILED='true'
+fi > $REDIRECT 2>&1
+
+# Remove the lockfile
+rm $LOCK_FLAG_DIR/lock-tmpfs > $REDIRECT 2>&1
+
+if [ "$TEMPFILE" != "" ]; then
+    if [ "$FAILED" == "false" ]; then
+        rm $TEMPFILE
+    else
+        cat $TEMPFILE | /bin/mailx -s "$HOSTNAME: gentoo-portage sync to tmpfs failed" mirrors@example.org
+        rm $TEMPFILE
+    fi
+fi

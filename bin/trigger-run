@@ -1,0 +1,31 @@
+#!/bin/bash
+
+source /data/mirror/etc/trigger.conf
+
+triggers=`echo ls -1 /data/trigger/set/.\`hostname\` | sftp -b - trigger@ftp-osl 2>&1 | grep -v ^sftp`
+
+if [ "$triggers" == "" ]; then
+	#nothing to do, exit
+	exit
+fi
+
+if ! echo "$triggers" | grep "^/data/trigger/set/.`hostname`" > /dev/null; then
+	logger -t mirror "Error: /data/trigger/set/.`hostname` does not exist."
+	exit 1
+fi
+
+for trigger in $triggers
+do
+    if lockfile -r0 $LOCKFILE &> /dev/null; then
+	if echo ls -1 /data/trigger/set/.`hostname` | sftp -b - trigger@ftp-osl 2>&1 | grep -v ^sftp | grep $trigger >/dev/null; then
+		echo "rm $trigger" | sftp -b - trigger@ftp-osl 2>&1 | grep -B 1 "No such file or directory"
+		rm -f $LOCKFILE
+		/data/mirror/bin/run-update `basename $trigger` --email
+	else
+		rm -f $LOCKFILE
+	fi
+    else
+	sleep 3 #Wait a few seconds for the lock to clear
+#	echo "Not able to obtain lockfile for $trigger. This tree will not be synced. Trying next tree..."
+    fi
+done

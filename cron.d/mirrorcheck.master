@@ -1,0 +1,3 @@
+MAILTO=mirrors@example.org
+
+5 1,7,13,19 * * * root /data/mirror/bin/check-size

@@ -1,0 +1,8 @@
+#####################################################
+# Slave mirror crontab
+#
+
+MAILTO=mirrors@example.org
+
+* * * * * root /data/mirror/bin/trigger-run
+

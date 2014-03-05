@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# The scripts use $BASEDIR
+export BASEDIR="/data/mirror/ftpsync"
+PROJECT=$1
+
+if [ `whoami` == "ftpsync" ]
+then
+    # Pass through to script
+    ${BASEDIR}/bin/ftpsync $@
+else
+    # Run as ftpsync, use easy names for calling this wrapper
+    su - ftpsync -c "BASEDIR=${BASEDIR} ${BASEDIR}/bin/ftpsync sync:archive:${PROJECT}"
+fi
