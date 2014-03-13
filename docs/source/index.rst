@@ -25,6 +25,22 @@ offer. We can server as the master mirror for small projects, but also as a part
 of a large project's mirror infrastructure. Each set of data is referred to as a
 'tree'; each project may have one or more trees.
 
+.. note::
+
+  This project has been tightly integrated into the OSL mirror infrastructure
+  and has a lot of hard coded references to hosts, paths and other bits.
+
+Installation
+------------
+
+As it stands now, the system is currently deployed using the OSL internal
+CFEngine configuration management system. Documentation will be updated to
+reflect how it should be installed externally.
+
+Most of the files reside in ``/data/mirror`` on the nodes while some scripts are
+located in ``/usr/local/sbin``. In addition there are other services such as
+xinetd, bwbar, etc that need to be configured outside of the 
+
 Hardware
 --------
 
@@ -70,11 +86,12 @@ The scripts used to manage the servers fall into several categories:
 - Control distribution of downloads.
 - Gather statistics on the status of the data.
 
-Links
------
-
 External Links
 --------------
+
+.. note::
+
+  Some of these links are restricted to OSL only networks currently.
 
 - `Mirror Sync Status`_: The sync status of every tree on each mirror.
 - `Mirror Tree Sizes`_: The size of every tree.  Used to monitor changes in
