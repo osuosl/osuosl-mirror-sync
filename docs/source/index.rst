@@ -21,7 +21,7 @@ Introduction
 ------------
 
 The nature of our system allows some flexibility to the services that we can
-offer. We can server as the master mirror for small projects, but also as a part
+offer. We can serve as the master mirror for small projects, but also as a part
 of a large project's mirror infrastructure. Each set of data is referred to as a
 'tree'; each project may have one or more trees.
 
@@ -39,7 +39,8 @@ reflect how it should be installed externally.
 
 Most of the files reside in ``/data/mirror`` on the nodes while some scripts are
 located in ``/usr/local/sbin``. In addition there are other services such as
-xinetd, bwbar, etc that need to be configured outside of the 
+xinetd, bwbar, etc that need to be configured outside these directories or the
+current repository.
 
 Hardware
 --------

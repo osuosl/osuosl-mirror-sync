@@ -17,9 +17,9 @@ Detailed Procedure
 First, choose which array to put the project:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 - We have two arrays: /data/ftp/.1 and /data/ftp/.2
-- Make sure there is enough disk space for you project
-- If you expect lots of bandwidth, put it on the less used array (look at
-  iostat)
+- Make sure there is enough disk space for your project
+- If you expect the project to use a lot of bandwidth, put it on the less used
+  array (look at iostat)
 
 In cfengine
 ~~~~~~~~~~~
