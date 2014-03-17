@@ -105,3 +105,10 @@ External Links
 .. _Mirror Tree Sizes: http://log.osuosl.org/size/
 .. _FTP Map: http://ftpmap.osuosl.org/
 .. _Awstats: https://awstats.osuosl.org/
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
