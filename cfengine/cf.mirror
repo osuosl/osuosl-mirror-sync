@@ -1,0 +1,426 @@
+control:
+
+    AddInstallable = ( update_initd update_sysctl_conf )
+
+directories:
+    
+    type_mirror::
+
+        # Make sure we have this directory for logging
+        /var/log/rsyncd mode=755 owner=root group=root
+
+        /data/mirror/bin mode=755 owner=root group=root
+        /data/mirror/etc mode=755 owner=root group=root
+        /data/mirror/lock mode=755 owner=root group=root
+
+        # real directories in /data/ftp/pub (most are symlinks)
+        /data/ftp/pub/drupal mode=755 owner=root group=root
+
+        # Special directory for ubuntu vhost
+        # If removing this, also un-hide it from /etc/vsftpd/vsftpd.conf
+        # and /etc/apache2/vhosts.d/01_ftp.osuosl.org.conf
+        /data/ftp/pub/ubuntu-apache-vhost mode=755 owner=root group=root
+    
+    type_mirror_master::
+        /data/trigger/lib mode=755 owner=root group=root
+        /data/trigger/usr/lib mode=755 owner=root group=root
+        /data/trigger/usr/lib/misc mode=755 owner=root group=root
+        /data/trigger/usr/bin mode=755 owner=root group=root
+        /data/trigger/set mode=2775 owner=root group=trigger
+        /data/trigger/set/.ftp-chi mode=2775 owner=root group=trigger
+        /data/trigger/set/.ftp-nyc mode=2775 owner=root group=trigger
+
+        # Local users that need permissions to set triggers:
+        /data/trigger/set/backports          mode=2775 owner=backports group=trigger
+        /data/trigger/set/blfs               mode=2775 owner=lfs group=trigger
+        /data/trigger/set/boost              mode=2775 owner=boost group=trigger
+        /data/trigger/set/clfs               mode=2775 owner=clfs group=trigger
+        /data/trigger/set/connect            mode=2775 owner=connect group=trigger
+        /data/trigger/set/debian             mode=2775 owner=debian group=trigger
+        /data/trigger/set/drupal             mode=2775 owner=drupal group=trigger
+        /data/trigger/set/drupal-audiocasts  mode=2775 owner=drupal group=trigger
+        /data/trigger/set/drupal-videocasts  mode=2775 owner=drupal group=trigger
+        /data/trigger/set/drupal-translations mode=2775 owner=drupal group=trigger
+        /data/trigger/set/drupal-quickstart  mode=2775 owner=drupal-quickstart group=trigger
+        /data/trigger/set/facebook           mode=2775 owner=facebook group=trigger
+        /data/trigger/set/funtoo             mode=2775 owner=funtoo group=trigger
+        /data/trigger/set/haiku              mode=2775 owner=haiku group=trigger
+        /data/trigger/set/hiphop             mode=2775 owner=hiphop group=trigger
+        /data/trigger/set/jenkins            mode=2775 owner=hudson group=trigger
+        /data/trigger/set/kde                mode=2775 owner=kdesync group=trigger
+        /data/trigger/set/linuxfoundation    mode=2775 owner=linuxfoundation group=trigger
+        /data/trigger/set/lfs                mode=2775 owner=lfs group=trigger
+        /data/trigger/set/lfs-livecd         mode=2775 owner=lfs group=trigger
+        /data/trigger/set/lubuntu            mode=2775 owner=lubuntu group=trigger
+        /data/trigger/set/manulix            mode=2775 owner=manulix group=trigger
+        /data/trigger/set/mariadb            mode=2775 owner=mariadb group=trigger
+        /data/trigger/set/netwinder          mode=2775 owner=netwinder group=trigger
+        /data/trigger/set/nslu2              mode=2775 owner=nslu2 group=trigger
+        /data/trigger/set/openefs            mode=2775 owner=openefs group=trigger
+        /data/trigger/set/open-fcoe          mode=2775 owner=open-fcoe group=trigger
+        /data/trigger/set/open-lldp          mode=2775 owner=open-lldp group=trigger
+        /data/trigger/set/openstreetmap      mode=2775 owner=openstreetmap group=trigger
+        /data/trigger/set/osbridge           mode=2775 owner=osbridge-admin group=trigger
+        /data/trigger/set/oswald             mode=2775 owner=oswald group=trigger
+        /data/trigger/set/osl                mode=2775 owner=peter group=trigger
+        /data/trigger/set/parrot             mode=2775 owner=parrot group=trigger
+        /data/trigger/set/phpbb-video        mode=2775 owner=phpbb-video group=phpbb-video
+        /data/trigger/set/pculture.org       mode=2775 owner=pculture group=trigger
+        /data/trigger/set/ros                mode=2775 owner=ros group=trigger
+        /data/trigger/set/ros-ubuntu         mode=2775 owner=ros group=trigger
+        /data/trigger/set/ros-showdow-fixed  mode=2775 owner=ros group=trigger
+        /data/trigger/set/sahana             mode=2775 owner=sahana group=trigger
+        /data/trigger/set/slackware          mode=2775 owner=slackware group=trigger
+        /data/trigger/set/slackware-GUS      mode=2775 owner=slackware group=trigger
+        /data/trigger/set/slackware-iso      mode=2775 owner=slackware group=trigger
+        /data/trigger/set/teachingopensource    mode=2775 owner=teachingopensource group=trigger
+        /data/trigger/set/vectorlinux        mode=2775 owner=vectorlinux group=trigger
+        /data/trigger/set/xiph               mode=2775 owner=xiph group=trigger
+        /data/trigger/set/midnightcommander  mode=2775 owner=midnightcommander group=trigger
+        /data/trigger/set/musescore          mode=2775 owner=musescore group=trigger
+
+        # Local users that need permissions to run run-update:
+        # Currently only drupal does this so they can be on cron
+        # but still be able to run a sync when needed
+        /data/mirror/lock/drupal            mode=755 owner=drupal group=root
+        /data/mirror/lock/drupal-audiocasts mode=755 owner=drupal group=root
+        /data/mirror/lock/drupal-pictures   mode=755 owner=drupal group=root
+        /data/mirror/lock/drupal-videocasts mode=755 owner=drupal group=root
+        /data/mirror/lock/drupal-translations mode=755 owner=drupal group=root
+
+copy:
+
+    type_mirror::
+        $(masterfiles)/etc/conf.d/bwbar/$(ns)$(host)
+            dest=/etc/conf.d/bwbar
+            mode=644
+            server=$(gold)
+
+        $(masterfiles)/etc/portage/package.use/mirror
+            dest=/etc/portage/package.use/mirror
+            mode=644
+            server=$(gold)
+
+        $(masterfiles)/etc/make.conf.d/mirror.conf
+            dest=/etc/make.conf.d/mirror.conf
+            mode=644
+            server=$(gold)
+            define=update_make_conf
+
+        $(masterfiles)/etc/portage/package.keywords/mirror
+            dest=/etc/portage/package.keywords/mirror
+            mode=644
+            server=$(gold)
+
+        $(masterfiles)/var/www/header-inc
+            dest=/var/www/header-inc
+            r=1
+            mode=644
+            server=$(gold)
+
+        $(masterfiles)/data/mirror/bin
+            dest=/data/mirror/bin
+            recurse=inf
+            mode=755
+            server=$(gold)
+            purge=false
+
+        $(masterfiles)/data/mirror/bin/update-master
+            dest=/data/mirror/bin/update-master
+            recurse=inf
+            mode=755
+            server=$(gold)
+            purge=true
+
+        $(masterfiles)/data/mirror/ftpsync/bin
+            dest=/data/mirror/ftpsync/bin
+            recurse=inf
+            mode=755
+            server=$(gold)
+            purge=false
+
+        $(masterfiles)/data/mirror/ftpsync/etc/common
+            dest=/data/mirror/ftpsync/etc/common
+            mode=644
+            server=$(gold)
+
+        $(masterfiles)/data/mirror/etc
+            dest=/data/mirror/etc
+            recurse=inf
+            exclude=gentoo
+            exclude=aqsis
+            exclude=*.passwd
+            exclude=deluge
+            exclude=elrepo
+            exclude=run-update.conf.*
+            mode=644
+            server=$(gold)
+
+        $(masterfiles)/data/mirror/etc
+            dest=/data/mirror/etc
+            recurse=inf
+            include=aqsis
+            include=deluge
+            include=elrepo
+            include=gentoo
+            include=*.passwd
+            mode=600
+            server=$(gold)
+
+        $(masterfiles)/data/ftp/welcome.msg
+            dest=/data/ftp/welcome.msg
+            mode=644
+            server=$(gold)
+
+        $(masterfiles)/etc/logrotate.d/apache2
+            dest=/etc/logrotate.d/apache2
+            mode=644
+            server=$(gold)
+
+        $(masterfiles)/etc/logrotate.d/rsync
+            dest=/etc/logrotate.d/rsync
+            mode=644
+            server=$(gold)
+
+        $(masterfiles)/etc/logrotate.d/hitstats
+            dest=/etc/logrotate.d/hitstats
+            mode=644
+            server=$(gold)
+
+        $(masterfiles)/usr/local/sbin.mirror
+            dest=/usr/local/sbin
+            recurse=inf
+            mode=744
+            server=$(gold)
+
+        $(masterfiles)/etc/init.d/hitstats
+            dest=/etc/init.d/hitstats
+            mode=755
+            server=$(gold)
+
+        $(masterfiles)/etc/conf.d/local.start/mirror
+            dest=/etc/conf.d/local.start
+            mode=644
+            server=$(gold)
+
+        $(masterfiles)/etc/conf.d/local.stop/mirror
+            dest=/etc/conf.d/local.stop
+            mode=644
+            server=$(gold)
+
+        $(masterfiles)/etc/sysctl.conf.d/80mirror.conf
+            dest=/etc/sysctl.conf.d/80mirror.conf
+            mode=640
+            define=update_sysctl_conf
+            server=$(gold)
+
+    type_mirror.service_firewall::
+        $(masterfiles)/etc/firewall.d/72mirror
+            dest=/etc/firewall.d/72mirror
+            mode=750
+            server=$(gold)
+
+    type_mirror_master::
+        $(masterfiles)/etc/cron.d/mirror
+            dest=/etc/cron.d
+            recurse=1
+            exclude=*.slave
+            mode=644
+            server=$(gold)
+
+        $(masterfiles)/data/mirror/etc.master
+            dest=/data/mirror/etc
+            recurse=inf
+            mode=644
+            server=$(gold)
+
+        $(masterfiles)/data/mirror/ftpsync/etc/master
+            dest=/data/mirror/ftpsync/etc
+            recurse=inf
+            mode=644
+            server=$(gold)
+
+        $(masterfiles)/etc/motd.d/mirror.master
+            dest=/etc/motd
+            mode=755
+            server=$(gold)
+
+        $(masterfiles)/data/mirror/etc/run-update.conf.master
+            dest=/data/mirror/etc/run-update.conf
+            mode=644
+            server=$(gold)
+
+        $(masterfiles)/root/dot.ssh/authorized_keys.ftpsync-master
+            dest=/home/ftpsync/.ssh/authorized_keys
+            owner=ftpsync
+            group=ftpsync
+            mode=644
+            server=$(gold)
+
+    type_mirror_slave::
+        $(masterfiles)/etc/cron.d/mirror
+            dest=/etc/cron.d
+            recurse=1
+            exclude=*.master
+            mode=644
+            server=$(gold)
+        
+        $(masterfiles)/data/mirror/etc.slave
+            dest=/data/mirror/etc
+            recurse=inf
+            mode=644
+            server=$(gold)
+
+        $(masterfiles)/data/mirror/ftpsync/etc/slave
+            dest=/data/mirror/ftpsync/etc
+            recurse=inf
+            mode=644
+            server=$(gold)
+
+        $(masterfiles)/etc/motd.d/mirror.slave
+            dest=/etc/motd
+            mode=644
+            server=$(gold)
+
+        $(masterfiles)/root/dot.ssh/authorized_keys.ftpsync
+            dest=/home/ftpsync/.ssh/authorized_keys
+            owner=ftpsync
+            group=ftpsync
+            mode=644
+            server=$(gold)
+
+        $(masterfiles)/data/mirror/etc/run-update.conf.slave
+            dest=/data/mirror/etc/run-update.conf
+            mode=644
+            server=$(gold)
+
+packages:
+    
+    type_mirror.gentoo::
+        =net-misc/bwbar-1.2.2       cmp=eq version=1.2.2 action=install
+        www-apache/mod_limitipconn  cmp=ge version=0.22-r1 action=install
+        mail-filter/procmail        cmp=ge version=3.22-r10 action=install
+        dev-python/geoip-python     cmp=ge version=1.2.0 action=install
+        net-misc/ftpsync            action=install
+
+    type_mirror_slave.gentoo::
+        net-analyzer/traceroute     cmp=ge version=1.4_p12-r2 action=install
+        app-admin/sysstat           cmp=ge version=5.0.5-r2 action=install
+        #sci-visualization/gnuplot  cmp=ge version=4.0-r1 action=install
+
+links:
+    
+    type_mirror::
+        # ftp content
+        /data/ftp/pub/1060.org -> ../.1/1060
+        /data/ftp/pub/apache -> ../.1/apache
+        /data/ftp/pub/aqsis -> ../.1/aqsis
+        /data/ftp/pub/archlinux ->! ../.2/archlinux
+        /data/ftp/pub/backports.org -> ../.1/backports
+        /data/ftp/pub/blfs -> ../.1/blfs
+        /data/ftp/pub/boost -> ../.1/boost
+        /data/ftp/pub/cAos ->! ../.2/caos
+        /data/ftp/pub/centos -> ../.1/centos
+        /data/ftp/pub/clfs -> ../.1/clfs
+        /data/ftp/pub/connect -> ../.2/connect
+        /data/ftp/pub/CPAN -> ../.1/cpan
+        /data/ftp/pub/cran -> ../.1/cran
+        /data/ftp/pub/cygwin ->! ../.2/cygwin
+        /data/ftp/pub/debian -> ../.2/debian
+        /data/ftp/pub/debian-cdimage -> ../.1/debian-cdimage
+        /data/ftp/pub/deluge -> ../.1/deluge
+        /data/ftp/pub/drupal/files/audiocasts -> ../../../.1/drupal-audiocasts
+        /data/ftp/pub/drupal/files/projects -> ../../../.1/drupal
+        /data/ftp/pub/drupal/files/videocasts -> ../../../.2/drupal-videocasts
+        /data/ftp/pub/drupal/files/translations -> ../../../.2/drupal-translations
+        /data/ftp/pub/drupal/files/pictures -> ../../../.1/drupal-pictures
+        /data/ftp/pub/drupal-quickstart -> ../.1/drupal-quickstart
+        /data/ftp/pub/eclipse -> ../.1/eclipse
+        /data/ftp/pub/elrepo -> ../.2/elrepo
+        /data/ftp/pub/facebook -> ../.2/facebook
+        /data/ftp/pub/faif-oggcast -> ../.1/faif-oggcast
+        /data/ftp/pub/fedora -> ../.1/fedora
+        /data/ftp/pub/fedora-epel ->! ../.1/fedora-epel
+        /data/ftp/pub/finnix -> ../.1/finnix
+        /data/ftp/pub/fosdem ->! ../.1/fosdem
+        /data/ftp/pub/funtoo ->! ../.1/funtoo
+        /data/ftp/pub/gentoo -> ../.2/gentoo
+        /data/ftp/pub/gnome ->! ../.2/gnome
+        /data/ftp/pub/gsb -> ../.2/gsb
+        /data/ftp/pub/grml -> ../.2/grml
+        /data/ftp/pub/haiku -> ../.2/haiku
+        /data/ftp/pub/hiphop -> ../.1/hiphop
+        /data/ftp/pub/hudson -> ../.2/jenkins
+        /data/ftp/pub/jenkins -> ../.2/jenkins
+        /data/ftp/pub/knoppix ->! ../.1/knoppix
+        /data/ftp/pub/knoppix-dvd ->! ../.1/knoppix-dvd
+        /data/ftp/pub/konqcast -> ../.2/konqcast
+        /data/ftp/pub/lfs -> ../.2/lfs
+        /data/ftp/pub/lfs-livecd -> ../.2/lfs-livecd
+        /data/ftp/pub/lfs-website -> ../.2/lfs-website
+        /data/ftp/pub/linuxfoundation -> ../.2/linuxfoundation
+        /data/ftp/pub/lubuntu -> ../.1/lubuntu
+        /data/ftp/pub/manulix -> ../.2/manulix
+        /data/ftp/pub/mariadb ->! ../.2/mariadb
+        /data/ftp/pub/mozdev -> ../.2/mozdev
+        /data/ftp/pub/musicbrainz -> ../.2/musicbrainz/pub/musicbrainz
+        /data/ftp/pub/mythbuntu -> ../.2/mythbuntu
+        /data/ftp/pub/mythtv -> ../.2/mythtv
+        /data/ftp/pub/netwinder -> ../.2/netwinder
+        /data/ftp/pub/nslu2 -> ../.2/nslu2
+        /data/ftp/pub/ooupdatexml -> ../.1/ooupdatexml
+        /data/ftp/pub/openclipart -> ../.2/openclipart
+        /data/ftp/pub/openefs -> ../.2/openefs
+        /data/ftp/pub/open-fcoe -> ../.1/open-fcoe
+        /data/ftp/pub/open-lldp -> ../.1/open-lldp
+        /data/ftp/pub/openstreetmap -> ../.2/openstreetmap
+        /data/ftp/pub/opensuse -> ../.1/opensuse/opensuse
+        /data/ftp/pub/osbridge -> ../.2/osbridge
+        /data/ftp/pub/osl -> ../.2/osl
+        /data/ftp/pub/oswald -> ../.2/oswald
+        /data/ftp/pub/parrot -> ../.2/parrot
+        /data/ftp/pub/pculture.org -> ../.2/pculture.org
+        /data/ftp/pub/phpbb-video -> ../.2/phpbb-video
+        /data/ftp/pub/portablepython -> ../.2/portablepython
+        /data/ftp/pub/replicant -> ../.2/replicant
+        /data/ftp/pub/ros -> ../.1/ros
+        /data/ftp/pub/ros-ubuntu -> ../.1/ros-ubuntu
+        /data/ftp/pub/ros-shadow-fixed -> ../.1/ros-shadow-fixed
+        /data/ftp/pub/sahana -> ../.2/sahana
+        /data/ftp/pub/salix -> ../.2/salix
+        /data/ftp/pub/sflc-podcast -> ../.2/sflc-podcast
+        /data/ftp/pub/slackware -> ../.2/slackware
+        /data/ftp/pub/slackware-iso -> ../.1/slackware-iso
+        /data/ftp/pub/tdf -> ../.2/tdf
+        /data/ftp/pub/tekbots -> ../.2/tekbots
+        /data/ftp/pub/teachingopensource -> ../.1/teachingopensource
+        /data/ftp/pub/trk -> ../.2/trk
+        /data/ftp/pub/trisquel ->! ../.1/trisquel
+        /data/ftp/pub/ubuntu -> ../.2/ubuntu
+        /data/ftp/pub/ubuntu-releases -> ../.2/ubuntu-releases
+        /data/ftp/pub/vectorlinux -> ../.1/vectorlinux
+        /data/ftp/pub/videolan -> ../.2/videolan
+        /data/ftp/pub/xbmc -> ../.2/xbmc
+        /data/ftp/pub/xiph -> ../.1/xiph
+        /data/ftp/pub/midnightcommander -> ../.1/midnightcommander
+        /data/ftp/pub/musescore -> ../.1/musescore
+
+        # Debian ftp links
+        /data/ftp/debian -> pub/debian/debian
+        /data/ftp/debian-cd -> pub/debian-cdimage
+        /data/ftp/debian-cdimage -> pub/debian-cdimage
+
+        # Debian apache vhost links
+        /data/ftp/pub/ftp.debian.org/debian -> ../debian/debian
+        /data/ftp/pub/ftp.debian.org/debian-cdimage -> ../debian-cdimage
+        /data/ftp/pub/ftp.debian.org/debian-backports -> ../backports.org
+
+        # Ubuntu apache vhost links
+        /data/ftp/pub/ubuntu-apache-vhost/ubuntu -> ../ubuntu
+        /data/ftp/pub/ubuntu-apache-vhost/releases -> ../ubuntu-releases
+
+files:
+
+    type_mirror::
+        $(rcdir)/on/bwbar action=touch mode=644 define=update_initd
+        $(rcdir)/on/hitstats action=touch mode=644 define=update_initd
